@@ -22,9 +22,9 @@
  *  TODO:
  */
 
-const int screenWidth = 800;
-const int screenHeight = 600;
-const int blockSize = 20;
+const int screenWidth = 1200;
+const int screenHeight = 900;
+const int blockSize = 30;
 
 enum GAMEScreen {
     NONE,
@@ -40,10 +40,12 @@ struct Position {
 };
 
 int score;
-int highestScore;
 Position fruit;
 std::deque<Position> snake;
 Position step;
+
+Config config;
+int highestScore;
 
 enum eDirection {
     UP,
@@ -173,8 +175,9 @@ void logic() {
 }
 
 void drawScore(int posX, int posY) {
+    int fontSize = blockSize;
     const char* scoreText = TextFormat("Score: %i", score);
-    int scoreTextWidth = MeasureText(scoreText, 20);
+    int scoreTextWidth = MeasureText(scoreText, fontSize);
 
     Color color = LIGHTGRAY;
 
@@ -186,16 +189,17 @@ void drawScore(int posX, int posY) {
         }
     }
 
-    DrawText(scoreText, posX, posY, 20, color);
+    DrawText(scoreText, posX, posY, fontSize, color);
 }
 
 void drawHighestScore(int posX, int posY) {
+    int fontSize = blockSize;
     int displayScore = highestScore;
     if (score > highestScore) {
         displayScore = score;
     }
     const char* highestScoreText = TextFormat("Highest Score: %i", displayScore);
-    int highestScoreTextWidth = MeasureText(highestScoreText, 20);
+    int highestScoreTextWidth = MeasureText(highestScoreText, fontSize);
 
     Color color = LIGHTGRAY;
 
@@ -207,7 +211,7 @@ void drawHighestScore(int posX, int posY) {
         }
     }
 
-    DrawText(highestScoreText, posX - highestScoreTextWidth, posY, 20, color);
+    DrawText(highestScoreText, posX - highestScoreTextWidth, posY, fontSize, color);
 }
 
 void SaveScore() {
