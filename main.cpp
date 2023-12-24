@@ -187,13 +187,21 @@ void drawScore(int posX, int posY) {
     DrawText(scoreText, posX, posY, 20, color);
 }
 
+void DrawCenteredText(const char* text, int verticalOffset, int fontSize, Color color) {
+    int textWidth = MeasureText(text, fontSize);
+    int textHeight = fontSize;
+    int textPosX = screenWidth / 2 - textWidth / 2;
+    int textPosY = screenHeight / 2 - textHeight / 2 + verticalOffset;
+    DrawText(text, textPosX, textPosY, fontSize, color);
+}
+
 void draw() {
     BeginDrawing();
     ClearBackground(BLACK);
 
     if (currentScreen == WELCOME) {
-        DrawText("SNAKE GAME", screenWidth / 2 - MeasureText("SNAKE GAME", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
-        DrawText("Press ENTER to start", screenWidth / 2 - MeasureText("Press ENTER to start", 20) / 2, screenHeight / 2 + 40, 20, GRAY);
+        DrawCenteredText("SNAKE GAME", -20, 40, GRAY);
+        DrawCenteredText("Press ENTER to start", 40, 20, GRAY);
     } else if (currentScreen == GAME) {
         drawScore(10, 10);
 
@@ -208,10 +216,10 @@ void draw() {
         DrawRectangle(fruit.x, fruit.y, blockSize, blockSize, RED);
 
         if (dir == STOP) {
-            DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+            DrawCenteredText("GAME PAUSED", 0, 40, GRAY);
         }
     } else if (currentScreen == GAMEOVER) {
-        DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+        DrawCenteredText("GAME OVER", 0, 40, GRAY);
     }
 
     EndDrawing();
