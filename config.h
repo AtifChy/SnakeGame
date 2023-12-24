@@ -24,4 +24,6 @@ class Config {
     static bool getBool(std::string key);
 };
 
+extern Config instance;
+
 #endif // CONFIG_H

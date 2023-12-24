@@ -20,6 +20,8 @@ Config::Config() {
     file >> config;
 }
 
+Config instance;
+
 void Config::save() {
     std::ofstream file(filePath);
     file << config.dump(4);
