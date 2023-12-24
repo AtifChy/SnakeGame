@@ -1,3 +1,5 @@
+#include "config.h"
+
 #include <deque>
 #include <iostream>
 #include <raylib.h>
@@ -225,6 +227,15 @@ void draw() {
     EndDrawing();
 }
 
+void SaveScore() {
+    Config config;
+    int highestScore = config.getInt("highestScore");
+    if (score > highestScore) {
+        config.set("highestScore", score);
+        config.save();
+    }
+}
+
 int main() {
     initGame();
 
@@ -232,6 +243,8 @@ int main() {
     SetTargetFPS(10);
 
     while (!WindowShouldClose()) {
+        SaveScore();
+
         input();
         logic();
         draw();
