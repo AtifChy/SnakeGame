@@ -20,8 +20,6 @@
 
 /*
  *  TODO:
- *   - Implement highest score counter
- *   - Store highest score in file
  */
 
 const int screenWidth = 800;
@@ -56,6 +54,9 @@ enum eDirection {
 eDirection dir;
 eDirection lastDir;
 
+Config config;
+int highestScore;
+
 void newFruit() {
     srand(time(NULL));
 
@@ -88,6 +89,7 @@ void initGame() {
     }
 
     score = 0;
+    highestScore = config.getInt("highestScore");
     dir = RIGHT;
     step = {blockSize, 0};
 
@@ -189,6 +191,34 @@ void drawScore(int posX, int posY) {
     DrawText(scoreText, posX, posY, 20, color);
 }
 
+void drawHighestScore(int posX, int posY) {
+    int displayScore = highestScore;
+    if (score > highestScore) {
+        displayScore = score;
+    }
+    const char* highestScoreText = TextFormat("Highest Score: %i", displayScore);
+    int highestScoreTextWidth = MeasureText(highestScoreText, 20);
+
+    Color color = LIGHTGRAY;
+
+    for (const Position& segment : snake) {
+        if (segment.x < posX + highestScoreTextWidth && segment.x + blockSize > posX) {
+            if (segment.y < posY + blockSize && segment.y + blockSize > posY) {
+                color = DARKGRAY;
+            }
+        }
+    }
+
+    DrawText(highestScoreText, posX - highestScoreTextWidth, posY, 20, color);
+}
+
+void SaveScore() {
+    if (score > highestScore) {
+        config.set("highestScore", score);
+        config.save();
+    }
+}
+
 void DrawCenteredText(const char* text, int verticalOffset, int fontSize, Color color) {
     int textWidth = MeasureText(text, fontSize);
     int textHeight = fontSize;
@@ -206,6 +236,7 @@ void draw() {
         DrawCenteredText("Press ENTER to start", 40, 20, GRAY);
     } else if (currentScreen == GAME) {
         drawScore(10, 10);
+        drawHighestScore(screenWidth - 10, 10);
 
         for (const Position& segment : snake) {
             if (segment.x == snake.front().x && segment.y == snake.front().y) {
@@ -222,18 +253,10 @@ void draw() {
         }
     } else if (currentScreen == GAMEOVER) {
         DrawCenteredText("GAME OVER", 0, 40, GRAY);
+        SaveScore();
     }
 
     EndDrawing();
-}
-
-void SaveScore() {
-    Config config;
-    int highestScore = config.getInt("highestScore");
-    if (score > highestScore) {
-        config.set("highestScore", score);
-        config.save();
-    }
 }
 
 int main() {
@@ -243,8 +266,6 @@ int main() {
     SetTargetFPS(10);
 
     while (!WindowShouldClose()) {
-        SaveScore();
-
         input();
         logic();
         draw();
