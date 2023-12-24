@@ -20,13 +20,19 @@
  *  TODO:
  *   - Implement highest score counter
  *   - Store highest score in file
- *   - Implement welcome screen
  */
 
-bool gameOver;
 const int screenWidth = 800;
 const int screenHeight = 600;
 const int blockSize = 20;
+
+enum GAMEScreen {
+    NONE,
+    WELCOME,
+    GAME,
+    GAMEOVER,
+};
+GAMEScreen currentScreen = NONE;
 
 struct Position {
     int x;
@@ -36,16 +42,17 @@ struct Position {
 int score;
 Position fruit;
 std::deque<Position> snake;
-
 Position step;
+
 enum eDirection {
-    Up,
-    Down,
-    Left,
-    Right,
+    UP,
+    DOWN,
+    LEFT,
+    RIGHT,
     STOP
 };
 eDirection dir;
+eDirection lastDir;
 
 void newFruit() {
     srand(time(NULL));
@@ -73,9 +80,13 @@ void newFruit() {
 }
 
 void initGame() {
-    gameOver = false;
+    if (currentScreen == NONE) {
+        currentScreen = WELCOME;
+        return;
+    }
+
     score = 0;
-    dir = Right;
+    dir = RIGHT;
     step = {blockSize, 0};
 
     snake = {
@@ -90,22 +101,44 @@ void initGame() {
 void input() {
     switch (GetKeyPressed()) {
         case KEY_RIGHT:
-            if (dir != Left) dir = Right;
+            if (dir != LEFT) {
+                dir = RIGHT;
+                step = {blockSize, 0};
+            }
             break;
         case KEY_LEFT:
-            if (dir != Right) dir = Left;
+            if (dir != RIGHT) {
+                dir = LEFT;
+                step = {-blockSize, 0};
+            }
             break;
         case KEY_UP:
-            if (dir != Down) dir = Up;
+            if (dir != DOWN) {
+                dir = UP;
+                step = {0, -blockSize};
+            }
             break;
         case KEY_DOWN:
-            if (dir != Up) dir = Down;
+            if (dir != UP) {
+                dir = DOWN;
+                step = {0, blockSize};
+            }
             break;
         case KEY_SPACE:
-            dir = STOP;
+            if (dir != STOP) {
+                lastDir = dir;
+                dir = STOP;
+            } else if (dir == STOP) {
+                dir = lastDir;
+            }
             break;
         case KEY_ENTER:
-            if (gameOver) initGame();
+            if (currentScreen == GAMEOVER) {
+                currentScreen = WELCOME;
+            } else if (currentScreen == WELCOME) {
+                currentScreen = GAME;
+            }
+            initGame();
             break;
         default:
             break;
@@ -113,24 +146,7 @@ void input() {
 }
 
 void logic() {
-    switch (dir) {
-        case Right:
-            step = {blockSize, 0};
-            break;
-        case Left:
-            step = {-blockSize, 0};
-            break;
-        case Up:
-            step = {0, -blockSize};
-            break;
-        case Down:
-            step = {0, blockSize};
-            break;
-        case STOP:
-            return;
-        default:
-            break;
-    }
+    if (currentScreen != GAME || dir == STOP) return;
 
     Position next = {
         (snake.front().x + step.x + screenWidth) % screenWidth,
@@ -139,7 +155,7 @@ void logic() {
 
     for (const Position& segment : snake) {
         if (segment.x == next.x && segment.y == next.y) {
-            gameOver = true;
+            currentScreen = GAMEOVER;
             break;
         }
     }
@@ -175,7 +191,10 @@ void draw() {
     BeginDrawing();
     ClearBackground(BLACK);
 
-    if (!gameOver) {
+    if (currentScreen == WELCOME) {
+        DrawText("SNAKE GAME", screenWidth / 2 - MeasureText("SNAKE GAME", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
+        DrawText("Press ENTER to start", screenWidth / 2 - MeasureText("Press ENTER to start", 20) / 2, screenHeight / 2 + 40, 20, GRAY);
+    } else if (currentScreen == GAME) {
         drawScore(10, 10);
 
         for (const Position& segment : snake) {
@@ -191,7 +210,7 @@ void draw() {
         if (dir == STOP) {
             DrawText("GAME PAUSED", screenWidth / 2 - MeasureText("GAME PAUSED", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
         }
-    } else {
+    } else if (currentScreen == GAMEOVER) {
         DrawText("GAME OVER", screenWidth / 2 - MeasureText("GAME OVER", 40) / 2, screenHeight / 2 - 40, 40, GRAY);
     }
 
