@@ -172,45 +172,24 @@ void logic() {
     }
 }
 
-void drawScore(int posX, int posY) {
-    int fontSize = blockSize;
-    const char* scoreText = TextFormat("Score: %i", score);
-    int scoreTextWidth = MeasureText(scoreText, fontSize);
+void DrawGameText(const char* text, int posX, int posY, int fontSize, Color color) {
+    int textWidth = MeasureText(text, fontSize);
+    int textHeight = fontSize;
 
-    Color color = LIGHTGRAY;
+    if (posX + textWidth > screenWidth) {
+        posX -= textWidth;
+    }
 
     for (const Position& segment : snake) {
-        if (segment.x < posX + scoreTextWidth && segment.x + blockSize > posX) {
-            if (segment.y < posY + blockSize && segment.y + blockSize > posY) {
+        if (segment.x < posX + textWidth && segment.x + blockSize > posX) {
+            if (segment.y < posY + textHeight && segment.y + blockSize > posY) {
                 color = DARKGRAY;
+                break;
             }
         }
     }
 
-    DrawText(scoreText, posX, posY, fontSize, color);
-}
-
-void drawHighestScore(int posX, int posY) {
-    int fontSize = blockSize;
-    int displayScore = highestScore;
-    if (score > highestScore) {
-        displayScore = score;
-    }
-    const char* highestScoreText = TextFormat("Highest Score: %i", displayScore);
-    int highestScoreTextWidth = MeasureText(highestScoreText, fontSize);
-    posX -= highestScoreTextWidth;
-
-    Color color = LIGHTGRAY;
-
-    for (const Position& segment : snake) {
-        if (segment.x < posX + highestScoreTextWidth && segment.x + blockSize > posX) {
-            if (segment.y < posY + blockSize && segment.y + blockSize > posY) {
-                color = DARKGRAY;
-            }
-        }
-    }
-
-    DrawText(highestScoreText, posX, posY, fontSize, color);
+    DrawText(text, posX, posY, fontSize, color);
 }
 
 void SaveScore() {
@@ -237,8 +216,8 @@ void draw() {
         DrawCenteredText("SNAKE GAME", -20, 40, GRAY);
         DrawCenteredText("Press ENTER to start", 40, 20, GRAY);
     } else if (currentScreen == GAME) {
-        drawScore(10, 10);
-        drawHighestScore(screenWidth - 10, 10);
+        DrawGameText(TextFormat("Score: %i", score), 10, 10, blockSize, LIGHTGRAY);
+        DrawGameText(TextFormat("Highest Score: %i", highestScore), screenWidth - 10, 10, blockSize, LIGHTGRAY);
 
         for (const Position& segment : snake) {
             if (segment.x == snake.front().x && segment.y == snake.front().y) {

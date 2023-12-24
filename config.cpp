@@ -7,6 +7,7 @@ using json = nlohmann::json;
 
 json Config::config;
 std::string Config::filePath;
+Config instance;
 
 Config::Config() {
     filePath = "config.json";
@@ -19,8 +20,6 @@ Config::Config() {
     }
     file >> config;
 }
-
-Config instance;
 
 void Config::save() {
     std::ofstream file(filePath);
