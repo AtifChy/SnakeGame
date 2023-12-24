@@ -30,7 +30,7 @@ enum GameScreen {
     NONE,
     WELCOME,
     GAME,
-    GAMEOVER,
+    GAMEOVER
 };
 GameScreen currentScreen = NONE;
 
@@ -167,6 +167,9 @@ void logic() {
     if (next.x == fruit.x && next.y == fruit.y) {
         newFruit();
         score += 10;
+        if (score > highestScore) {
+            highestScore = score;
+        }
     } else {
         snake.pop_back();
     }
@@ -192,14 +195,6 @@ void DrawGameText(const char* text, int posX, int posY, int fontSize, Color colo
     DrawText(text, posX, posY, fontSize, color);
 }
 
-void SaveScore() {
-    if (score > highestScore) {
-        highestScore = score;
-        Config::set("highestScore", score);
-        Config::save();
-    }
-}
-
 void DrawCenteredText(const char* text, int verticalOffset, int fontSize, Color color) {
     int textWidth = MeasureText(text, fontSize);
     int textHeight = fontSize;
@@ -214,7 +209,7 @@ void draw() {
 
     if (currentScreen == WELCOME) {
         DrawCenteredText("SNAKE GAME", -20, 40, GRAY);
-        DrawCenteredText("Press ENTER to start", 40, 20, GRAY);
+        DrawCenteredText("Press ENTER to start", 30, 20, GRAY);
     } else if (currentScreen == GAME) {
         DrawGameText(TextFormat("Score: %i", score), 10, 10, blockSize, LIGHTGRAY);
         DrawGameText(TextFormat("Highest Score: %i", highestScore), screenWidth - 10, 10, blockSize, LIGHTGRAY);
@@ -233,8 +228,12 @@ void draw() {
             DrawCenteredText("GAME PAUSED", 0, 40, GRAY);
         }
     } else if (currentScreen == GAMEOVER) {
-        DrawCenteredText("GAME OVER", 0, 40, GRAY);
-        SaveScore();
+        DrawCenteredText("GAME OVER", -20, 40, GRAY);
+        if (score == highestScore) {
+            DrawCenteredText("NEW HIGH SCORE!", 30, 20, GRAY);
+            Config::set("highestScore", score);
+            Config::save();
+        }
     }
 
     EndDrawing();
