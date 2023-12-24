@@ -9,7 +9,7 @@ enable_testing()
 find_package(raylib 4.0 REQUIRED)
 find_package(nlohmann_json 3.9.1 REQUIRED)
 
-add_executable(SnakeGame main.cpp)
+add_executable(SnakeGame main.cpp config.cpp config.h)
 
 target_link_libraries(SnakeGame PRIVATE raylib)
 target_link_libraries(SnakeGame PRIVATE nlohmann_json::nlohmann_json)
