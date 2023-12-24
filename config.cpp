@@ -5,6 +5,9 @@
 
 using json = nlohmann::json;
 
+json Config::config;
+std::string Config::filePath;
+
 Config::Config() {
     filePath = "config.json";
     std::ifstream file(filePath);

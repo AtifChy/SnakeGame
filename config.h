@@ -8,20 +8,20 @@ using json = nlohmann::json;
 
 class Config {
   private:
-    json config;
-    std::string filePath;
+    static json config;
+    static std::string filePath;
 
   public:
     Config();
-    void save();
-    void set(std::string key, std::string value);
-    void set(std::string key, int value);
-    void set(std::string key, float value);
-    void set(std::string key, bool value);
-    std::string getString(std::string key);
-    int getInt(std::string key);
-    float getFloat(std::string key);
-    bool getBool(std::string key);
+    static void save();
+    static void set(std::string key, std::string value);
+    static void set(std::string key, int value);
+    static void set(std::string key, float value);
+    static void set(std::string key, bool value);
+    static std::string getString(std::string key);
+    static int getInt(std::string key);
+    static float getFloat(std::string key);
+    static bool getBool(std::string key);
 };
 
 #endif // CONFIG_H

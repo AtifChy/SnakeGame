@@ -40,6 +40,7 @@ struct Position {
 };
 
 int score;
+int highestScore;
 Position fruit;
 std::deque<Position> snake;
 Position step;
@@ -53,9 +54,6 @@ enum eDirection {
 };
 eDirection dir;
 eDirection lastDir;
-
-Config config;
-int highestScore;
 
 void newFruit() {
     srand(time(NULL));
@@ -89,7 +87,7 @@ void initGame() {
     }
 
     score = 0;
-    highestScore = config.getInt("highestScore");
+    highestScore = Config::getInt("highestScore");
     dir = RIGHT;
     step = {blockSize, 0};
 
@@ -214,8 +212,8 @@ void drawHighestScore(int posX, int posY) {
 
 void SaveScore() {
     if (score > highestScore) {
-        config.set("highestScore", score);
-        config.save();
+        Config::set("highestScore", score);
+        Config::save();
     }
 }
 
