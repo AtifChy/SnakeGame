@@ -1,29 +1,46 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#pragma once
 
 #include <nlohmann/json.hpp>
 #include <string>
-
-using json = nlohmann::json;
+#include <vector>
 
 class Config {
   private:
+    using json = nlohmann::json;
     static json config;
     static std::string filePath;
 
   public:
     Config();
     static void save();
-    static void set(std::string key, std::string value);
-    static void set(std::string key, int value);
-    static void set(std::string key, float value);
-    static void set(std::string key, bool value);
-    static std::string getString(std::string key);
-    static int getInt(std::string key);
-    static float getFloat(std::string key);
-    static bool getBool(std::string key);
+
+    template <typename T>
+    static void set(std::vector<std::string> keys, T value) {
+        json* current = &config;
+        for (int i = 0; i < keys.size(); i++) {
+            if (i == keys.size() - 1) {
+                (*current)[keys[i]] = value;
+            } else {
+                if (!(*current)[keys[i]].is_object()) {
+                    (*current)[keys[i]] = json::object();
+                }
+                current = &(*current)[keys[i]];
+            }
+        }
+    }
+
+    template <typename T>
+    static T get(std::vector<std::string> keys) {
+        json* current = &config;
+        for (const auto& key : keys) {
+            if (current->is_object() && current->contains(key)) {
+                current = &(*current)[key];
+            } else {
+                return T();
+            }
+        }
+        return current->get<T>();
+    }
 };
 
 extern Config instance;
-
-#endif // CONFIG_H
