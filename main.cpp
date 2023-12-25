@@ -22,9 +22,10 @@
  *  TODO:
  */
 
-const int screenWidth = 900;
-const int screenHeight = 600;
-const int blockSize = 30;
+const int blockSize = 26;
+int screenWidth = blockSize * 36;
+int screenHeight = blockSize * 28;
+const int fps = 10;
 
 enum GameScreen {
     NONE,
@@ -54,6 +55,9 @@ enum eDirection {
 };
 eDirection dir;
 eDirection lastDir;
+
+bool wallCollision;
+bool speedUp;
 
 void newFruit() {
     srand(time(NULL));
@@ -87,7 +91,7 @@ void initGame() {
     }
 
     score = 0;
-    highestScore = Config::getInt("highestScore");
+    highestScore = Config::get<int>({"highestScore"});
     dir = RIGHT;
     step = {blockSize, 0};
 
@@ -98,6 +102,11 @@ void initGame() {
         },
     };
     newFruit();
+
+    wallCollision = Config::get<bool>({"mode", "wall"});
+    speedUp = Config::get<bool>({"mode", "speed"});
+
+    SetTargetFPS(fps);
 }
 
 void input() {
@@ -151,8 +160,8 @@ void logic() {
     if (currentScreen != GAME || dir == STOP) return;
 
     Position next = {
-        (snake.front().x + step.x + screenWidth) % screenWidth,
-        (snake.front().y + step.y + screenHeight) % screenHeight,
+        snake.front().x + step.x,
+        snake.front().y + step.y,
     };
 
     for (const Position& segment : snake) {
@@ -162,14 +171,30 @@ void logic() {
         }
     }
 
+    if (wallCollision) {
+        if (next.x < 0 || next.x >= screenWidth || next.y < 0 || next.y >= screenHeight) {
+            currentScreen = GAMEOVER;
+            return;
+        }
+    } else {
+        if (next.x < 0) {
+            next.x = screenWidth - blockSize;
+        } else if (next.x >= screenWidth) {
+            next.x = 0;
+        } else if (next.y < 0) {
+            next.y = screenHeight - blockSize;
+        } else if (next.y >= screenHeight) {
+            next.y = 0;
+        }
+    }
+
     snake.push_front(next);
 
     if (next.x == fruit.x && next.y == fruit.y) {
         newFruit();
         score += 10;
-        if (score > highestScore) {
-            highestScore = score;
-        }
+        if (score > highestScore) highestScore = score;
+        if (speedUp) SetTargetFPS(GetFPS() + 1);
     } else {
         snake.pop_back();
     }
@@ -207,6 +232,8 @@ void draw() {
     BeginDrawing();
     ClearBackground(BLACK);
 
+    // DrawFPS(300, 10);
+
     if (currentScreen == WELCOME) {
         DrawCenteredText("SNAKE GAME", -20, 40, GRAY);
         DrawCenteredText("Press ENTER to start", 30, 20, GRAY);
@@ -231,7 +258,7 @@ void draw() {
         DrawCenteredText("GAME OVER", -20, 40, GRAY);
         if (score == highestScore) {
             DrawCenteredText("NEW HIGH SCORE!", 30, 20, GRAY);
-            Config::set("highestScore", score);
+            Config::set<int>({"highestScore"}, score);
             Config::save();
         }
     }
@@ -243,7 +270,6 @@ int main() {
     initGame();
 
     InitWindow(screenWidth, screenHeight, "Snake Game");
-    SetTargetFPS(10);
 
     while (!WindowShouldClose()) {
         input();
